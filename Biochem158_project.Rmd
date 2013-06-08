@@ -1,0 +1,68 @@
+% Biochem 158 Final Project (TITLE)
+% Kris Sankaran
+% June 7, 2013
+
+Data Analysis
+--------------
+
+Here, we reproduce analysis of the paper Witten etc.
+
+
+```{r include=FALSE}
+setwd('~/Documents//SeniorYear//Spring2013//Bioc158')
+```
+
+```{r overallSequencesCounts, comment=NA}
+miRNA.counts <- read.csv('nSequencesObtained.csv', header=TRUE)
+head(miRNA.counts) # These are the number of reads in each individual
+library(ggplot2)
+
+library(reshape2)
+mCounts <- melt(miRNA.counts[, c('Normal', 'Cancer')], variable.name='type', 
+                value.name='nReads')
+sort(mCounts[, 'nReads'], decreasing = TRUE)
+ggplot(mCounts[-c(30, 45, 60), ]) + 
+  geom_bar(aes(x=nReads, fill=type), binwidth = 1e5) + 
+  ggtitle('Histogram of Counts per Sample') # Excluding largest counts, for viewability
+```
+
+```{r countsPerSampleType, comment = NA}
+miRNA.expression <- read.csv('miRNA_expression.csv', header = TRUE)
+mExpress <- melt(miRNA.expression, variable.name = 'type', value.name = 'nReads')
+mExpress$nReads <- (mExpress$nReads) ^ (1 / 3) # cube root transformation
+normal.ix <- which(substr(mExpress[, 'type'], 1, 1) == 'N')
+mExpressSummary <- mExpress
+mExpressSummary[normal.ix, 'type'] <- 'N'
+mExpressSummary[-normal.ix, 'type'] <- 'T'
+
+ggplot(mExpressSummary) + geom_histogram(aes(x = nReads, fill = type)) + 
+  ggtitle('Number of Reads in Tumor and Normal Samples')
+```
+
+```{r hClust, comment = NA}
+X <- read.csv('miExpress2.csv', header = T)
+rownames(X) <- X[, 1]
+X <- X[, -1]
+
+X <- X ^ (1/3) # Cube-root transform
+miRNA.clust <- hclust(as.dist(1 - cor(X)))
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R") # Plotting Package
+A2Rplot(miRNA.clust, k=3, col.down = c("#FF6B6B","#4ECDC4","#556270"),
+        main = 'Hierchical Clustering of Patients using miRNA Counts')
+```
+
+```{r pca, comment = NA}
+X.tilde <- scale(t(X), center = TRUE, scale = FALSE)
+svdX <- svd(X.tilde)
+pca.X <- svdX$u %*% diag(svdX$d)
+pca.approx <- pca.X[, 1:2]
+
+## Plot PCA
+colnames(pca.approx) <- c("PC1", "PC2")
+pca.labeled <-data.frame(pca.approx, label = colnames(X))
+sample.type <- substr(pca.labeled$label, start = 6, stop = 6)
+sample.type[59:60] <- c('N', 'T')
+ggplot(pca.labeled) + 
+  geom_text(aes(x = PC1, y = PC2, label = label, col = sample.type)) + 
+  ggtitle("Principal Components from miRNAs Discriminate between Groups")
+```

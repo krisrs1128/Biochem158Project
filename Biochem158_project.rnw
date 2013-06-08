@@ -1,0 +1,679 @@
+\documentclass[12pt,english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{esint}
+\usepackage[colorlinks = true, citecolor = blue, linkcolor = magenta, urlcolor = green]{hyperref}
+\usepackage{setspace}
+\usepackage{fullpage}
+
+\doublespace
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\theoremstyle{plain}
+\newtheorem{thm}{\protect\theoremname}
+  \theoremstyle{remark}
+  \newtheorem{claim}[thm]{\protect\claimname}
+
+\makeatother
+
+\usepackage{babel}
+  \providecommand{\claimname}{Claim}
+\providecommand{\theoremname}{Theorem}
+
+\author{Kris Sankaran}
+\date{\today}
+\title{Biochem 158 Final Project}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+In this project, we first review considerations for designing microRNA
+(miRNA) profiling experiments that have appeared in recent literature
+and then  explain and reproduce some of the statistical inferential
+techniques proposed in \cite{witten2010ultra} for working with the
+high-throughput data extracted from these experiments. In addition to
+supplying \texttt{R} code within the text of this paper, all
+preprocessed data and \texttt{R} analysis can be downloaded from
+\href{http://github.com/krisrs1128}{http://github.com/krisrs1128}.
+
+miRNAs are small ($\sim$22 nucleotide) noncoding RNAs that
+facilitate regulation of gene expression through translational
+inhibition \cite{kong2009strategies, pritchard2012microrna}. Further,
+though it is estimated that there are only several thousand human
+miRNAs (there are 2042 mature human miRNA sequences indexed in
+\href{http://www.mirbase.org/cgi-bin/browse.pl?org=hsa}{mirBASE} as of
+June 2013), they control expression patterns many coding genes; of
+particular interest, in the last decade, it has been found
+that miRNAs regulate transitions in plant and animal development,
+including tissue differentiation \cite{ohnishi2010small,
+  zhou2007mir, grosshans2005temporal}. Further, there are relevant
+links between the study of miRNA function and research involving stem
+cells and cancer \cite{alvarez2005microrna,   calin2006microrna,
+  volinia2006microrna}.
+
+Hence, the quantification of miRNAs expression levels between
+diverse biological samples has become an important activity both for
+fundamental biology, especially work to understand the mechanisms of
+gene regulation, and medical research, such as the
+identification of disease biomarkers. The diverse methodologies
+developed towards these ends are referred to as miRNA profiling. There
+is no standard, one-size-fits-all approach to the design of profiling
+experiments \cite{kong2009strategies, pritchard2012microrna}. However, the
+assortment of profiling techniques share the same overall pipeline:
+RNA extraction, quantification and quality control, and profiling
+\cite{pritchard2012microrna}. The specific choices at stages in this
+pipeline, along with the research and sample considerations that guide
+these choices, are the focus of section \ref{sec:pipeline}. In section
+\ref{sec:inference}, we transition to the problem of inferring
+interesting patterns from profiling data collected from RNA-seq
+profiling platforms. In particular, we focus on explaining and
+illustrating the high-dimensional statistical learning machinery found
+useful in \cite{witten2010ultra}.
+
+\section{miRNA profiling pipeline and considerations}
+\label{sec:pipeline}
+
+\subsection{RNA extraction and sample types}
+
+The first step of any miRNA profiling experiment is the collection of
+RNA for subsequent statistical inspection. miRNAs can be extracted
+from a number of sample types, including cell lines, fresh tissues,
+FACS, FFPE tissues, plasma, serum, and urine
+\cite{pritchard2012microrna}. Cell lines and fresh tissues typically
+have the highest yield, but can be more difficult to prepare; body
+fluids typically have the smallest yield, but are easy to collect.
+Fixed tissues can be convenient to work with, and it has been reported
+that, unlike the longer mRNAs, miRNAs are stable in fixed tissues.
+
+Once a sample type has been selected, standard RNA extraction
+procedures can be applied, though they are typically modified to
+promote enrichment of small RNAs. A number of \href{https://www.google.com/search?q=miRNA+isolation+kit&oq=miRNA+isolation+kit&aqs=chrome.0.57j0l3j62l2.3401j0&sourceid=chrome&ie=UTF-8}{commercially
+  available
+  kits} are available to isolate miRNAs; these are based on the
+appropriate chemical extraction protocols. To increase representation
+of small RNAs, size fractionation is common. However, this step is
+not necessary, as profiling technologies, briefly reviewed in section
+\ref{sec:profiling_tech}, are increasingly capable of distinguishing
+miRNAs from other RNAs. Indeed, most profilers are capable of
+resolving the smaller mature miRNAs from the larger precursor and
+primary transcript miRNAs, despite the overlaps in base pairs
+\cite{pritchard2012microrna, kong2009strategies}.
+
+\subsection{Quantification and quality assurance}
+
+Quantification is generally achieved through spectrophotometry or
+automated capillary electrophoresis. Certain well-characterized miRNAs
+can be taken as endogenous controls. Furthermore, standardization can
+be achieved by spiking in control miRNAs. For example, for miRNA
+extracted from body fluids, miRNAs from \textit{C. elegans} have been
+artificially introduced in known amounts, and the measured values for
+these controls guide normalization \cite{kroh2010analysis}. These
+methods facilitate the reproducibility of study findings by separating
+true biological signal from variations emerging from assay preparation
+\cite{mestdagh2009novel, peltier2008normalization}.
+
+\subsection{Profiling technologies}
+\label{sec:profiling_tech}
+
+miRNA profiling technologies provide measurements of the relative
+abundances of miRNAs between different samples.
+Two main approaches have emerged: direct hybridization without sample
+amplification and variations of PCR-like amplification
+\cite{kong2009strategies}.
+
+The most common direct hybridization method employs oligo-microarrays.
+Modifications have been designed to differentiate mature miRNAs from
+their primary transcript and hairpin precursor miRNAs
+\cite{liu2008expression}. These methods require larger initial total
+RNA samples; however, since amplification is avoided, the measurements
+obtained tend to be more stable and robust to variations in extract
+preparation \cite{kong2009strategies}. Further, since many labs
+already have microarray equipment, this approach to miRNA profiling is
+more generally accessible.
+
+As alternatives to direct hybridization, quantitative RNA sequencing
+PCR (qRT-PCR) and RNA sequencing (RNA-seq) have been employed
+\cite{kong2009strategies, pritchard2012microrna}. Since these methods
+involve first amplifying the miRNA content in samples, it is possible
+to use then with samples with smaller RNA content, such as plasmas or
+needle-biopsies. In qRT-PCR, total RNA undergoes a modified reverse
+transcriptase (RT) reaction to produce cDNA where, instead of the
+standard poly-A reverse primers, a miRNA-specific reverse primer is
+utilized. In the PCR step, mature miRNA-specific forwards primers are
+introduced to selectively amplify miRNA sequences. As a consequence,
+qRT-PCR can only be used to quantify abundances of known miRNAs; it
+cannot identify novel miRNAs.
+
+Conversely RNA-seq methods \emph{can} identify novel miRNAs; further,
+they finely resolve between similar miRNA sequences
+\cite{pritchard2012microrna}. The specific approaches differ between
+platforms, but they all involve both hybridization and selective
+amplification. For example, in miRAGE (miRNA serial analysis of gene
+expression), magnetic linkers added to enriched small RNAs, whose
+sequences are then reverse transcribed into cDNA. This cDNA is then
+amplified by PCR; however, the PCR product is filtered for the
+magnetic linkers. Only small RNA remains, which is then sequenced.
+This sequencing step allows for identification of novel miRNAs.
+
+\section{Statistical inference}
+\label{sec:inference}
+
+Section \ref{sec:pipeline} describes the overall workflow and
+options possible for performing a miRNA profiling study. This overall
+pipeline has been the subject of a number of recent reviews, including
+\cite{pritchard2012microrna, kong2009strategies} cited above. Once
+data is appropriately collected, focus shifts to performing valid and
+powerful statistical inference. In this section, we review the
+high-dimensional statistical learning methods described in
+\cite{witten2010ultra} and reproduce their analysis using the data
+available in their
+\href{http://www.biomedcentral.com/1741-7007/8/58/additional}{additional
+  files}. Since the measurements in \cite{witten2010ultra} was
+collected from the RNA-seq profiling approach of
+\ref{sec:profiling_tech}, our discussion will be tailored to
+data collected through such amplification and sequencing. Their
+experiment was designed to identify miRNAs (known and
+novel) that are differentially abundant in normal and cervical cancer
+tumor tissue.
+
+\subsection{Preliminary observations}
+
+Before applying specific inferential methods, it is worth previewing
+the miRNA sequencing data. We read in the data below.
+<<setup, include = F>>=
+setwd('~/Documents/SeniorYear/Spring2013/Bioc158')
+@
+\begin{spacing}{1}
+<<miRNAcounts, comment = NA>>=
+X <- read.csv("miExpress2.csv", header = T)
+rownames(X) <- X[, 1]
+X <- X[, -1]
+nGenes <- nrow(X)
+nSamples <- ncol(X)
+X <- X ^ (1/3)  # Cube-root transform
+
+sample.type <- substr(colnames(X), start = 6, stop = 6)
+sample.type[59:60] <- c('N', 'T') # two come from second run on same individual
+sample.type <- factor(sample.type)
+
+nGenes
+nSamples
+
+X[1:5, 1:4] # Preview first five miRNAs, first four samples
+
+summary(sample.type) # Number of normal and tumor samples.
+@
+\end{spacing}
+<<include = F>>=
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = T))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+@
+Observe that we work with expression of \Sexpr{nGenes} miRNAs in paired normal
+and cancerous tissues over \Sexpr{nSamples} individuals, with 2
+sequencing runs (those for G699N and G761T). Since the data is
+right-skewed (a few measurements are very large, and most are close
+to zero), a cube-root transformation is applied.
+
+Figure \ref{fig:hist_counts} displays overall distribution of counts
+between samples and miRNAs. The plot ``Counts per Sample'' shows the
+total number of (cube-rooted) counts in different samples, color coded
+according to whether the samples are normal or cancer tissue. The plot
+``Counts per miRNA'' shows the cube rooted counts per miRNA over all
+samples. Even after cube rooting, the distribution is right-skewed.
+The plot ``Gene by Sample Counts'' displays the same information
+without aggregating over either samples or miRNAs -- it shows the
+distribution of individual elements in the data matrix.
+
+\begin{spacing}{1}
+\begin{figure}
+<<histogram_counts, fig.height = 6, message = F>>=
+library(ggplot2)
+library(reshape2)
+mX <- melt(X)
+mX$sample.type <- rep(sample.type, each = nGenes)
+colnames(mX) <- c('miRNA', 'sample', 'count', 'sample.type')
+p1 <- qplot(x = colSums(X),
+      geom = 'histogram',
+      fill = sample.type) +
+    ggtitle('Counts per Sample') +
+    scale_x_continuous('Cube root of Sample Counts') +
+    scale_y_continuous('Frequency')
+p2 <- ggplot(mX) +
+    geom_histogram(aes(x = count, fill = sample.type)) +
+    ggtitle('Gene by Sample Counts') +
+    scale_y_continuous('Frequency')
+p3 <- qplot(x = rowSums(X),
+            geom = 'histogram') +
+    ggtitle('Counts per miRNA') +
+    scale_x_continuous('Cube root of Sample Counts') +
+    scale_y_continuous('Frequency')
+multiplot(p1, p2, p3, cols = 2)
+@
+\caption{Histograms of sample aggregated, miRNA aggregated, and
+  unaggregated counts in the data provided by \cite{witten2010ultra}.}
+\label{fig:hist_counts}
+\end{figure}
+\end{spacing}
+
+\subsection{Unsupervised methods}
+\label{sec:unsupervised}
+
+The first class of methods relevant to our inference are called
+unsupervised methods. In these methods, the relation between samples
+is characterized without using the labels associated with them (in
+this case, the label is whether or not the sample comes from normal or
+cancerous tissue). The nature of the characterization depends on the
+specific method, but often involves finding appropriate
+lower-dimensional representations of or significant separations within
+samples.
+
+If these algorithms, despite being trained independently of
+class labels, nonetheless identify separations corresponding to
+class labels, then we can deduce that the most important variations in
+the data are associated with these labels. We find this to be the case
+with our miRNA data, indicating that collected miRNA expression levels
+exhibit strong associations with the presence or cervical cancer. It
+is in the domain of the supervised methods of section
+\ref{sec:supervised_methods} to identify which of the \Sexpr{nGenes}
+are responsible for these associations.
+
+\subsection{Principal components analysis}
+
+A first thought is to apply principal components analysis (PCA).
+Conceptually, if we think about each sample as a point in
+\Sexpr{nGenes}-dimensional space (each coordinate corresponding to the
+expression level of a single miRNA), then PCA finds a lower
+$d$-dimensional plane (we take $d = 2$ for visualization purposes)
+that best approximates all \Sexpr{nSamples} sample points in our data.
+Mathematically, it can be demonstrated that this plane also maximizes
+the variation of the projection of points onto a $d$-dimensional
+plane, so we can interpret the principal components as the linear
+combinations of covariates that explain the most variation in the
+data.
+
+\begin{spacing}{1}
+<<pca>>=
+# Code for PCA
+pc.X <- function(X){
+    X.tilde <- scale(X, center = T, scale = F)
+    svdX <- svd(X.tilde)
+    pca.X <- svdX$u %*% diag(svdX$d)
+    pca.approx <- pca.X[, 1:2]
+    return(pca.approx)
+}
+
+pca.labeled <- data.frame(pc.X(t(X)), pc.X(1 - cor(X)), label = colnames(X))
+colnames(pca.labeled) <- c('PC1', 'PC2', 'PC1.cor', 'PC2.cor', 'label')
+@
+\end{spacing}
+
+The most direct approach
+to PCA for our miRNA data is to work
+with the cube-rooted data visualized before. This is displayed on the
+left of figure \ref{fig:pca}. Alternatively, we can construct a
+distance based on the correlations between samples. We then find the
+best 2-dimensional approximation for this data. The result is
+displayed on the right in \ref{fig:pca}.
+
+Notice that both approaches effectively separate samples obtained
+from tumorous and normal tissues, despite being constructed without
+any label of the state of samples. This is corroborates the
+claim above that the miRNA data supplied contains strong associations
+between expression level and tumor-state.
+
+\begin{spacing}{1}
+  \begin{figure}
+<<pca_plot, fig.height = 6, cache = T>>=
+pca.plot <- ggplot(pca.labeled) +
+    geom_text(aes(x = PC1, y = PC2, label = label, col = sample.type)) +
+    ggtitle('PCA from rooted data')
+pca.plot.cor <- ggplot(pca.labeled) +
+    geom_text(aes(x = PC1.cor, y = PC2.cor, label = label, col = sample.type)) +
+    ggtitle('PCA from correlation distance')
+
+multiplot(pca.plot, pca.plot.cor)
+@
+\caption{2-dimensional approximation obtained by PCA. Notice that the
+  sample labels are distinguished even though the algorithm does not
+  use them in its development. The correlation approach yields less
+  skewed groups.}
+\label{fig:pca}
+\end{figure}
+\end{spacing}
+
+\subsection{Hierarchical clustering}
+
+The second unsupervised method we consider is hierarchical clustering.
+Given pairwise distances between samples, hierarchical
+clustering recursively pairs closest samples, resulting in a tree
+allowing visualization of the distances between all samples. In a
+sense, it serves as a function to map local pairwise distance
+information into a global representation of the relationship between
+all samples.
+
+More precisely, given all pairwise distances between samples, we first
+merge the two points closest to each other, calling this a cluster. At
+the next iteration, we recompute pairwise distances, where the
+distance of points to this new cluster is defined as the distance to the
+farthest point in this cluster. This procedure is repeated, where
+the distance between two clusters is defined to be the maximum of the
+pairwise distances between points contained within either cluster. The
+sequences of merges is displayed in a tree. The heights of the merges
+in the tree are the distances between the clusters when they are
+merged. Notice that no where in this algorithm is a labeling of points
+used.
+
+For our application, we define the distance between two samples
+with estimated miRNA abundances correlation $\hat{\rho}$ to be $1 -
+\left|\hat{\rho}\right|$. This is intuitively reasonable: points with
+perfect correlation should have zero distance, while
+if they are uncorrelated, they should have maximum distance to each
+other. The result of the clustering is displayed in figure
+\ref{fig:hclust}. Amazingly, with the exception of samples
+G428\_T and G701\_T, the clustering perfectly separates the normal
+samples from the tumor samples. Again, this corroborates the idea that
+miRNA abundance effectively distinguishes between cancer and normal
+samples.
+\begin{spacing}{1}
+  \begin{figure}
+<<hclustPlot, fig.height = 5>>=
+source("http://addictedtor.free.fr/packages/A2R/lastVersion/R/code.R")  # Plotting Package
+miRNA.clust <- hclust(as.dist(1 - cor(X)))
+A2Rplot(miRNA.clust, k = 3, col.down = c("#FF6B6B", "#4ECDC4", "#556270"), main = "Hierchical Clustering of Patients using miRNA Counts")
+@
+\caption{Hierarchical clustering of samples using correlation
+  obtained using miRNA expression levels.}
+\label{fig:hclust}
+\end{figure}
+\end{spacing}
+
+\subsection{Supervised methods}
+\label{sec:supervised_methods}
+
+Next, we consider the application of supervised learning methods. The
+distinguishing feature of these algorithms is that they need to
+be trained with sample labels. These methods can be trained to perform
+classification and identify differential expression of miRNAs between
+tumor and normal and tissue samples. Hence, while the methods of
+section \ref{sec:unsupervised} were able to identify strong
+associations between global miRNA expression and cancer state, the
+methods below will be able to resolve the particular miRNAs that
+contribute to these differences.
+
+\subsubsection{NSC classification}
+
+Again, we consider each sample to be a point in
+\Sexpr{nGenes}-dimensional space where each coordinate is the
+expression level of a particular miRNA. The goal is to train a
+classifier such that, given a vector of expression levels of these
+miRNAs for a new tissue, we can decide whether the sample came from a
+cervical cancer or normal tissue. Further, we would like the
+classifier to output which are the differentially expressed miRNAs
+that contribute to the classification. An approach designed
+specifically for this kind of high-dimensional setting is nearest
+shrunken centroids (NSC) \cite{tibshirani2003class,
+  hastie2005elements}.
+
+Heuristically, the NSC algorithm is a version of linear
+discriminant analysis regularized to be appropriate for the
+high-dimension of samples. Specifically, given a new sample, we can
+compute the distance to the known average expression levels for the
+tumorous and normal tissues in our training data (the distance is
+taken with respect to the estimated variances of individual miRNA
+expression levels).
+
+The naive approach would be to classify the new sample to the closest
+of these two averages. However, this presumes that every miRNA
+contributes to the differences between normal and tumorous samples.
+We don't expect this to be the case, so we soft-threshold the
+averages until only the miRNAs contributing the most to the
+classification are included. We then classify the new sample to the
+closest of these thresholded averages.
+
+Of course, we don't know in advance the appropriate level to threshold
+these averages. Hence, we apply cross-validation. The idea is to fix a
+thresholding level, train the classifier on a subset of samples, and
+calculate the error rate of the classification of the remaining
+samples. A range of thresholding levels is considered, and that
+yielding the minimum error rate is selected. This classifier can now
+be used on entirely new data.
+
+We apply the \texttt{R} package
+\href{http://cran.r-project.org/web/packages/pamr/index.html}{\texttt{pamr}}
+to perform NCS classification on our miRNA data. We display the
+cross-validation results in figure \ref{fig:cv}, the expression levels
+of miRNAs used in the classifier in figure \ref{fig:geneplot}, and the
+corresponding centroids in \ref{fig:centroids}. The cross-validation
+results are typical: the under and overthresholded models have higher
+misclassification rates. We choose the threshold \Sexpr{cv.thresh},
+because it is the largest (among those tested) that still yields a
+minimum cross-validation error; intuitively, this is the simplest
+model achieving minimum estimated average test error, which we find to
+be about \Sexpr{nMisclassified / nSamples} (compared to 0.5 for random
+classifications).
+
+The classifier uses \Sexpr{nGenesUsed} of the \Sexpr{nGenes} total
+miRNAs. From figures \ref{fig:geneplot} and \ref{fig:centroids}, we
+find that all of these miRNAs, with the exception of miR-205 are less
+expressed in tumor samples than in the normal tissues. We can now look up
+these miRNAs on miRBase. For example,
+\href{http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0000446}{miR-125b}
+has been found to be associated with cell differentiation, and
+\href{http://www.mirbase.org/cgi-bin/mirna_entry.pl?acc=MI0000459}{miR-143}
+has been implicated in both cardiac morphogenesis and certain types of
+cancer.
+
+\begin{spacing}{1}
+<<nsc_classification, cache = T, results = 'hide'>>=
+library('pamr')
+nsc.train.data <- list(x = X, y = sample.type,
+                       genenames = rownames(X))
+training.results <- pamr.train(nsc.train.data)
+set.seed('672013') # Cross-validation includes randomness
+nsc.cv.fit <- pamr.cv(training.results, nsc.train.data)
+cv.thresh.ix <- max(which(nsc.cv.fit$error == min(nsc.cv.fit$error)))
+cv.thresh <- nsc.cv.fit$threshold[cv.thresh.ix]
+nMisclassified <- nsc.cv.fit$error[cv.thresh.ix] * 60
+nGenesUsed <- nsc.cv.fit$size[cv.thresh.ix]
+@
+\end{spacing}
+
+\begin{spacing}{1}
+\begin{figure}
+<<plotcv, fig.height = 6>>=
+pamr.plotcv(nsc.cv.fit)
+@
+\caption{Misclassification rates estimated for different values of the
+  thresholding parameter, using cross-validation.}
+\label{fig:cv}
+\end{figure}
+\end{spacing}
+
+\begin{spacing}{1}
+\begin{figure}
+<<geneplot, cache = T, fig.height = 8>>=
+pamr.geneplot(training.results, nsc.train.data, threshold = cv.thresh)
+@
+\caption{microRNA expression levels in tumor and normal samples.
+  Reading from left to right, top to bottom, the indices in the titles
+  correspond to the miRNA names, read top to bottom,  in figure
+  \ref{fig:centroids}. Green gives expression levels in tumorous
+  samples while red gives expression levels in normal tissues.}
+\label{fig:geneplot}
+\end{figure}
+\end{spacing}
+
+\begin{spacing}{1}
+\begin{figure}
+<<centroids, cache = T, fig.height = 3>>=
+pamr.plotcen(training.results, nsc.train.data, threshold = cv.thresh)
+@
+\caption{These are the centroids employed in classification after a
+  threshold has been chosen. The larger the centroid coordinate for a
+  particular RNA, the stronger the association.}
+\label{fig:centroids}
+\end{figure}
+\end{spacing}
+
+\subsubsection{Testing differential expression}
+
+Finally, we can formally test for the differential expression of
+miRNAs between samples and estimate the associated false discovery
+rate (FDR). We describe a simple approach; a more sophisticated technique
+can be read in \cite{witten2010ultra}.
+
+The basic idea is to perform a $t$-test for differential
+expression of each miRNA. Due to the multiple testing, we cannot
+directly use the analytic $p$-values for the $t$-test to determine
+which results are significant at any prespecified level. Instead, we
+nonparametrically estimate the FDR via permutations.
+
+Recall that the FDR is defined as the expected
+proportion of false positives among all hypotheses rejected. To
+estimate this quantity, we observe that under the null hypothesis of
+equal miRNA expression between tumor and normal tissue classes, we can
+permute class labels without changing the distribution of test
+statistics. Hence, to estimate the FDR, assuming a
+fixed number of rejected hypotheses, we can permute the class labels
+to calculate the null distribution of test statistics. We can compare
+the test statistics calculated on our real data with this null
+distribution; the FDR associated with $k$ rejections
+is then the proportion of test statistics in the null distribution
+larger than the statistic $t_{\left(k\right)}$ (the $k^{th}$ largest
+statistic in our tests on true data).
+
+The estimated FDRs are displayed in figure
+\ref{fig:fdr}. \Sexpr{n.rejected.05level} miRNAs are deemed
+significant at an FDR level of 0.05; they are stored in the object
+\texttt{significant.genes}. The first few are displayed in the code
+chunk below.
+
+\begin{spacing}{1}
+<<t_test_func, cache = T>>=
+t.test.miRNA <- function(X, sample.type) {
+    # Normalize each individual's mean miRNA counts
+    X.tilde <- apply(X, MARGIN = 2, FUN = function(v) {v / (mean(v))})
+    # Two sample t-test
+    t.statistics <- apply(X.tilde, MARGIN = 1,
+                          FUN = function(gene) t.test(gene ~ sample.type)$statistic)
+    sort.genes <- sort(t.statistics, decreasing = T)
+
+    return(sort.genes)
+}
+
+perm.statistics <- function(X, sample.type, n.perm = 100) {
+    nGenes <- nrow(X)
+    t.statistics.perm <- matrix(nrow = n.perm, ncol = nGenes)
+    for(i in 1:n.perm) {
+        # Generate random permutations
+        sample.type.perm <- sample(sample.type)
+        t.statistics.perm[i, ] <- t.test.miRNA(X, sample.type.perm)
+    }
+    return (t.statistics.perm)
+}
+
+fdr.rates <- function(true.statistics, perm.stats) {
+    nGenes <- length(true.statistics)
+    fdr.rate <- vector(length = nGenes)
+    for(i in 1:nGenes) {
+        thresh <- true.statistics[i]
+        fdr.rate[i] <- length(which(permuted.stats >= thresh)) / (nrow(perm.stats) * i)
+    }
+    return(fdr.rate)
+}
+
+genes.t.test <- t.test.miRNA(X, sample.type)
+permuted.stats <- perm.statistics(X, sample.type)
+t.test.fdr <- fdr.rates(genes.t.test, permuted.stats)
+
+n.rejected.05level <- max(which(t.test.fdr <= 0.05))
+significant.genes <- genes.t.test[1:n.rejected.05level]
+head(significant.genes)
+@
+\end{spacing}
+
+\begin{spacing}{1}
+  \begin{figure}
+<<miRNA_fdr, fig.height = 4>>=
+qplot(x = 1:200, t.test.fdr[1:200]) +
+    scale_x_continuous('Number of Significant miRNAs Declared') +
+    scale_y_continuous('FDR') +
+    ggtitle('Estimated FDR for t-tests') +
+    geom_line(y = 0.05, col = 'red')
+@
+\caption{FDR.}
+\label{fig:fdr}
+\end{figure}
+\end{spacing}
+
+\section{Conclusion}
+
+In this report, we explored current techniques in
+experimental preparation and statistical analysis of miRNA profiling
+data. We found that there is no universal approach to collecting
+miRNA profiling data, but that the necessary choices can be guided by
+sample and research considerations. Further, in our reproduction of
+statistical analysis of RNA-seq pipeline profiling data, we found
+strong associations between specific miRNA expression levels and the
+tumor-status of tissues; indeed, associations were detected even via
+unsupervised methods.
+
+More broadly, this project has given a chance to work in the
+intersection between modern genetics and statistics. We have seen how
+an array of creative experimental and statistical techniques have been
+designed to both deepen our understanding of miRNAs and the regulation of
+gene expression as well as provide potentially powerful biomarkers for
+diseases. As personalized genomics and medicine
+continues to expand and the associated data and research questions
+grow in complexity, we anticipate challenging problems whose
+solutions can be informed by the themes that we have encountered in
+this report and which present rich research and healthcare
+opportunities.
+
+\bibliographystyle{plain}
+\bibliography{Biochem158_project}
+
+\end{document}

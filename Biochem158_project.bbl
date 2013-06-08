@@ -1,0 +1,99 @@
+\begin{thebibliography}{10}
+
+\bibitem{alvarez2005microrna}
+Ines Alvarez-Garcia and Eric~A Miska.
+\newblock Microrna functions in animal development and human disease.
+\newblock {\em Development}, 132(21):4653--4662, 2005.
+
+\bibitem{calin2006microrna}
+George~Adrian Calin and Carlo~Maria Croce.
+\newblock Microrna-cancer connection: the beginning of a new tale.
+\newblock {\em Cancer research}, 66(15):7390--7394, 2006.
+
+\bibitem{grosshans2005temporal}
+Helge Gro{\ss}hans, Ted Johnson, Kristy~L Reinert, Mark Gerstein, and Frank~J
+  Slack.
+\newblock The temporal patterning microrna< i> let-7</i> regulates several
+  transcription factors at the larval to adult transition in< i> c.
+  elegans</i>.
+\newblock {\em Developmental cell}, 8(3):321--330, 2005.
+
+\bibitem{hastie2005elements}
+Trevor Hastie, Robert Tibshirani, Jerome Friedman, and James Franklin.
+\newblock The elements of statistical learning: data mining, inference and
+  prediction.
+\newblock {\em The Mathematical Intelligencer}, 27(2):83--85, 2005.
+
+\bibitem{kong2009strategies}
+William Kong, Jian-Jun Zhao, Lili He, and Jin~Q Cheng.
+\newblock Strategies for profiling microrna expression.
+\newblock {\em Journal of cellular physiology}, 218(1):22--25, 2009.
+
+\bibitem{kroh2010analysis}
+Evan~M Kroh, Rachael~K Parkin, Patrick~S Mitchell, and Muneesh Tewari.
+\newblock Analysis of circulating microrna biomarkers in plasma and serum using
+  quantitative reverse transcription-pcr (qrt-pcr).
+\newblock {\em Methods}, 50(4):298--301, 2010.
+
+\bibitem{liu2008expression}
+Chang-Gong Liu, Riccardo Spizzo, George~Adrian Calin, and Carlo~Maria Croce.
+\newblock Expression profiling of microrna using oligo dna arrays.
+\newblock {\em Methods (San Diego, Calif.)}, 44(1):22, 2008.
+
+\bibitem{mestdagh2009novel}
+Pieter Mestdagh, Pieter Van~Vlierberghe, An~De~Weer, Daniel Muth, Frank
+  Westermann, Frank Speleman, Jo~Vandesompele, et~al.
+\newblock A novel and universal method for microrna rt-qpcr data normalization.
+\newblock {\em Genome Biol}, 10(6):R64, 2009.
+
+\bibitem{ohnishi2010small}
+Yusuke Ohnishi, Yasushi Totoki, Atsushi Toyoda, Toshiaki Watanabe, Yasuhiro
+  Yamamoto, Katsushi Tokunaga, Yoshiyuki Sakaki, Hiroyuki Sasaki, and Hirohiko
+  Hohjoh.
+\newblock Small rna class transition from sirna/pirna to mirna during
+  pre-implantation mouse development.
+\newblock {\em Nucleic acids research}, 38(15):5141--5151, 2010.
+
+\bibitem{peltier2008normalization}
+Heidi~J Peltier and Gary~J Latham.
+\newblock Normalization of microrna expression levels in quantitative rt-pcr
+  assays: identification of suitable reference rna targets in normal and
+  cancerous human solid tissues.
+\newblock {\em Rna}, 14(5):844--852, 2008.
+
+\bibitem{pritchard2012microrna}
+Colin~C Pritchard, Heather~H Cheng, and Muneesh Tewari.
+\newblock Microrna profiling: approaches and considerations.
+\newblock {\em Nature Reviews Genetics}, 13(5):358--369, 2012.
+
+\bibitem{tibshirani2003class}
+Robert Tibshirani, Trevor Hastie, Balasubramanian Narasimhan, and Gilbert Chu.
+\newblock Class prediction by nearest shrunken centroids, with applications to
+  dna microarrays.
+\newblock {\em Statistical Science}, pages 104--117, 2003.
+
+\bibitem{volinia2006microrna}
+Stefano Volinia, George~A Calin, Chang-Gong Liu, Stefan Ambs, Amelia Cimmino,
+  Fabio Petrocca, Rosa Visone, Marilena Iorio, Claudia Roldo, Manuela Ferracin,
+  et~al.
+\newblock A microrna expression signature of human solid tumors defines cancer
+  gene targets.
+\newblock {\em Proceedings of the National Academy of Sciences of the United
+  States of America}, 103(7):2257--2261, 2006.
+
+\bibitem{witten2010ultra}
+Daniela Witten, Robert Tibshirani, Sam~G Gu, Andrew Fire, and Weng-Onn Lui.
+\newblock Ultra-high throughput sequencing-based small rna discovery and
+  discrete statistical biomarker analysis in a collection of cervical tumours
+  and matched controls.
+\newblock {\em BMC biology}, 8(1):58, 2010.
+
+\bibitem{zhou2007mir}
+Beiyan Zhou, Stephanie Wang, Christine Mayr, David~P Bartel, and Harvey~F
+  Lodish.
+\newblock mir-150, a microrna expressed in mature b and t cells, blocks early b
+  cell development when expressed prematurely.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  104(17):7080--7085, 2007.
+
+\end{thebibliography}

@@ -1,0 +1,45 @@
+This is BibTeX, Version 0.99c (TeX Live 2009/Debian)
+The top-level auxiliary file: Biochem158_project.aux
+The style file: plain.bst
+Database file #1: Biochem158_project.bib
+You've used 15 entries,
+            2118 wiz_defined-function locations,
+            610 strings with 7748 characters,
+and the built_in function-call counts, 6301 in all, are:
+= -- 601
+> -- 405
+< -- 1
++ -- 163
+- -- 144
+* -- 556
+:= -- 1083
+add.period$ -- 45
+call.type$ -- 15
+change.case$ -- 115
+chr.to.int$ -- 0
+cite$ -- 15
+duplicate$ -- 174
+empty$ -- 403
+format.name$ -- 144
+if$ -- 1238
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 15
+newline$ -- 78
+num.names$ -- 30
+pop$ -- 87
+preamble$ -- 1
+purify$ -- 100
+quote$ -- 0
+skip$ -- 121
+stack$ -- 0
+substring$ -- 425
+swap$ -- 24
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 60
+warning$ -- 0
+while$ -- 58
+width$ -- 17
+write$ -- 167
