@@ -1,14 +1,13 @@
-\BOOKMARK [1][-]{section.1}{Introduction}{}
-\BOOKMARK [1][-]{section.2}{miRNA profiling pipeline and considerations}{}
-\BOOKMARK [2][-]{subsection.2.1}{RNA extraction and sample types}{section.2}
-\BOOKMARK [2][-]{subsection.2.2}{Quantification and quality assurance}{section.2}
-\BOOKMARK [2][-]{subsection.2.3}{Profiling technologies}{section.2}
-\BOOKMARK [1][-]{section.3}{Statistical inference}{}
-\BOOKMARK [2][-]{subsection.3.1}{Preliminary observations}{section.3}
-\BOOKMARK [2][-]{subsection.3.2}{Unsupervised methods}{section.3}
-\BOOKMARK [2][-]{subsection.3.3}{Principal components analysis}{section.3}
-\BOOKMARK [2][-]{subsection.3.4}{Hierarchical clustering}{section.3}
-\BOOKMARK [2][-]{subsection.3.5}{Supervised methods}{section.3}
-\BOOKMARK [3][-]{subsubsection.3.5.1}{NSC classification}{subsection.3.5}
-\BOOKMARK [3][-]{subsubsection.3.5.2}{Testing differential expression}{subsection.3.5}
-\BOOKMARK [1][-]{section.4}{Conclusion}{}
+\BOOKMARK [1][-]{section.1}{miRNA profiling pipeline and considerations}{}
+\BOOKMARK [2][-]{subsection.1.1}{RNA extraction and sample types}{section.1}
+\BOOKMARK [2][-]{subsection.1.2}{Quantification and quality assurance}{section.1}
+\BOOKMARK [2][-]{subsection.1.3}{Profiling technologies}{section.1}
+\BOOKMARK [1][-]{section.2}{Statistical inference}{}
+\BOOKMARK [2][-]{subsection.2.1}{Preliminary observations}{section.2}
+\BOOKMARK [2][-]{subsection.2.2}{Unsupervised methods}{section.2}
+\BOOKMARK [2][-]{subsection.2.3}{Principal components analysis}{section.2}
+\BOOKMARK [2][-]{subsection.2.4}{Hierarchical clustering}{section.2}
+\BOOKMARK [2][-]{subsection.2.5}{Supervised methods}{section.2}
+\BOOKMARK [3][-]{subsubsection.2.5.1}{NSC classification}{subsection.2.5}
+\BOOKMARK [3][-]{subsubsection.2.5.2}{Testing differential expression}{subsection.2.5}
+\BOOKMARK [1][-]{section.3}{Conclusion}{}
